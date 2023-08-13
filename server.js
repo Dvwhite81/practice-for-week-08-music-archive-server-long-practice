@@ -69,6 +69,302 @@ const server = http.createServer((req, res) => {
 
     // Your code here
 
+    // Get all the artists
+    if (req.method === "GET" && req.url === "/artists") {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.body = JSON.stringify(artists);
+      return res.end(res.body);
+    }
+
+    // Get a specific artist's details based on artistId
+    if (req.method === "GET" && req.url.startsWith("/artists/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const artistId = urlParts[2];
+        const artist = artists[artistId];
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(artist);
+        return res.end(res.body)
+      }
+    }
+
+    // Add an artist
+    if (req.method === "POST" && req.url === "/artists") {
+      const artistId = getNewArtistId();
+      artists[artistId] = {
+        artistId: artistId,
+        name: req.body.name
+      };
+
+      res.statusCode = 201;
+      res.setHeader('Content-Type', 'application/json');
+      res.body = JSON.stringify(artists[artistId]);
+      return res.end(res.body);
+    }
+
+    // Edit a specified artist by artistId
+    if ((req.method === "PATCH"  || req.method === "PUT") && req.url.startsWith("/artists/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const artistId = urlParts[2];
+        const artist = artists[artistId];
+        artist.name = req.body.name;
+        artist.updatedAt = new Date();
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(artist)
+      }
+    }
+
+    // Delete a specified artist by artistId
+    if (req.method === "DELETE" && req.url.startsWith("/artists/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const artistId = urlParts[2];
+        const artist = artists[artistId];
+        delete artist;
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify({"message": "Successfully deleted"});
+        return res.end(res.body);
+      }
+    }
+
+    // Get all albums of a specific artist based on artistId
+    if (req.method === "GET" && req.url.startsWith("/artists/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 4 && urlParts[3] === "albums") {
+        const artistId = urlParts[2];
+        let artistAlbums = [];
+
+        for (let album in albums) {
+          if (albums[album].artistId === artistId) {
+            artistAlbums.push(albums[album]);
+          }
+        }
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(artistAlbums);
+        return res.end(res.body);
+      }
+    }
+
+    // Get a specific album's details based on albumId
+    if (req.method === "GET" && req.url.startsWith("/albums/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const albumId = urlParts[2];
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(albums[albumId]);
+        return res.end(res.body);
+      }
+    }
+
+    // Add an album to a specific artist based on artistId
+    if (req.method === "POST" && req.url.startsWith("/artists/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 4) {
+        const artistId = urlParts[2];
+        const albumId = getNewAlbumId();
+
+        albums[albumId] = {
+          albumId: albumId,
+          name: req.body.name,
+          artistId: artistId
+        };
+
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(albums[albumId]);
+        return res.end(res.body);
+      }
+    }
+
+    // Edit a specified album by albumId
+    if ((req.method === "PATCH" || req.method === "PUT") && req.url.startsWith("/albums/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const albumId = urlParts[2];
+        const album = albums[albumId];
+        const artistId = album.artistId;
+        album = {
+          name: req.body.name,
+          albumId: albumId,
+          artistId: artistId,
+          updatedAt: new Date()
+        };
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(album);
+        return res.end(res.body);
+      }
+    }
+
+    // Delete a specified album by albumId
+    if (req.method === "DELETE" && req.url.startsWith("/albums/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const albumId = urlParts[2];
+        delete albums[albumId];
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify({"message": "Successfully deleted"});
+        return res.end(res.body);
+      }
+    }
+
+    // Get all songs of a specific artist based on artistId
+    if (req.method === "GET" && req.url.startsWith("/artists/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 4) {
+        const artistId = urlParts[2];
+        let artistSongs = [];
+
+        for (let song in songs) {
+          if (songs[song].artistId === artistId) {
+            artistSongs.push(songs[song]);
+          }
+        }
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(artistSongs);
+        return res.end(res.body);
+      }
+    }
+
+    // Get all songs of a specific album based on albumId
+    if (req.method === "GET" && req.url.startsWith("/albums/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 4) {
+        const albumId = urlParts[2];
+        let albumSongs = [];
+
+        for (let song in songs) {
+          if (songs[song].albumId === albumId) {
+            albumSongs.push(songs[song]);
+          }
+        }
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(albumSongs);
+        return res.end(res.body);
+      }
+    }
+
+    // Get all songs of a specified trackNumber
+    if (req.method === "GET" && req.url.startsWith("/trackNumbers/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 4) {
+        const trackNumber = urlParts[2];
+        const songsTrackNumber = [];
+
+        for (let song in songs) {
+          if (songs[song].trackNumber === trackNumber) {
+            songsTrackNumber.push(songs[song]);
+          }
+        }
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(songsTrackNumber);
+        return res.end(res.body);
+      }
+    }
+
+    // Get a specific song's details based on songId
+    if (req.method === "GET" && req.url.startsWith("/songs/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 4) {
+        const songId = urlParts[2];
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(songs[songId]);
+        return res.end(res.body);
+      }
+    }
+
+    // Add a song to a specific album based on albumId
+    if (req.method === "POST" && req.url.startsWith("/albums/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 4) {
+        const albumId = urlParts[2];
+        const songId = getNewSongId();
+        songs[songId] = {
+          name: req.body.name,
+          lyrics: req.body.lyrics,
+          trackNumber: req.body.trackNumber,
+          songId: songId,
+          albumId: albumId
+        };
+
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(songs[songId]);
+        return res.end(res.body);
+      }
+    }
+
+    // Edit a specified song by songId
+    if ((req.method === "PATCH" || req.method === "PUT") && req.url.startsWith("/songs/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const songId = urlParts[2];
+        songs[songId] = {
+          name: req.body.name,
+          lyrics: req.body.lyrics,
+          trackNumber: req.body.trackNumber,
+          updatedAt: new Date()
+        };
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify(songs[songId]);
+        return res.end(res.body);
+      }
+    }
+
+    // Delete a specified song by songId
+    if (req.method === "DELETE" && req.url.startsWith("/songs/")) {
+      const urlParts = req.url.split("/");
+
+      if (urlParts.length === 3) {
+        const songId = urlParts[2];
+        delete songs[songId];
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.body = JSON.stringify({"message": "Successfully deleted"});
+        return res.end(res.body);
+      }
+    }
+
     res.statusCode = 404;
     res.setHeader('Content-Type', 'application/json');
     res.write("Endpoint not found");
