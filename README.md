@@ -1,3 +1,4 @@
+Heroku is no longer free. I used Render, so not sure if everything is correct.
 # Long Practice: API Server for a Music Archive
 
 **Finish the [API docs for a Music Archive practice] before this practice.**
